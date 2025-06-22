@@ -1,5 +1,3 @@
-#![allow(unused)]
-
 use std::fs::{File, OpenOptions};
 use std::io::{self, Read, Error};
 use std::{ptr, env};
