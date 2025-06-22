@@ -10,3 +10,9 @@
 
 - Rust (stable)
 - Compatible operating system (Windows, Linux, etc.)
+
+## How to use
+```bash
+cargo build --release
+cargo run --release <path_to_shellcode.bin>
+```
